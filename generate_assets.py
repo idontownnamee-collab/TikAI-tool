@@ -1,4 +1,4 @@
-import os, struct, zlib
+import os, struct, zlib, stat
 
 os.makedirs('app/src/main/res/drawable', exist_ok=True)
 os.makedirs('app/src/main/res/mipmap-anydpi-v26', exist_ok=True)
@@ -38,5 +38,117 @@ for folder, size in [('mipmap-mdpi',48),('mipmap-hdpi',72),('mipmap-xhdpi',96),(
     with open(f'{p}/ic_launcher.png', 'wb') as f: f.write(d)
     with open(f'{p}/ic_launcher_round.png', 'wb') as f: f.write(d)
     print(f'Created {folder} icons')
+
+# ── Generate Gradle wrapper files ──────────────────────────────────────────────
+if not os.path.exists('gradlew'):
+    gradlew_content = r"""#!/bin/sh
+#
+# Copyright © 2015-2021 the original authors.
+# Licensed under the Apache License, Version 2.0
+#
+##############################################################################
+# Gradle start up script for UN*X
+##############################################################################
+APP_NAME="Gradle"
+APP_BASE_NAME=`basename "$0"`
+DEFAULT_JVM_OPTS='"-Xmx64m" "-Xms64m"'
+CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
+
+die () {
+    echo
+    echo "$*"
+    echo
+    exit 1
+} >&2
+
+warn () {
+    echo "$*"
+} >&2
+
+# Determine the Java command to use to start the JVM.
+if [ -n "$JAVA_HOME" ] ; then
+    if [ -x "$JAVA_HOME/jre/sh/java" ] ; then
+        JAVACMD="$JAVA_HOME/jre/sh/java"
+    else
+        JAVACMD="$JAVA_HOME/bin/java"
+    fi
+    if [ ! -x "$JAVACMD" ] ; then
+        die "ERROR: JAVA_HOME is set to an invalid directory: $JAVA_HOME"
+    fi
+else
+    JAVACMD="java"
+    which java >/dev/null 2>&1 || die "ERROR: JAVA_HOME is not set and no 'java' command found in your PATH."
+fi
+
+APP_HOME=`pwd -P`
+
+exec "$JAVACMD" $DEFAULT_JVM_OPTS $JAVA_OPTS $GRADLE_OPTS \
+    "-Dorg.gradle.appname=$APP_BASE_NAME" \
+    -classpath "$CLASSPATH" \
+    org.gradle.wrapper.GradleWrapperMain \
+    "$@"
+"""
+    with open('gradlew', 'w', newline='\n') as f:
+        f.write(gradlew_content)
+    os.chmod('gradlew', os.stat('gradlew').st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+    print('Created gradlew')
+
+if not os.path.exists('gradlew.bat'):
+    gradlew_bat = r"""@rem
+@rem Copyright 2015 the original author or authors.
+@rem Licensed under the Apache License, Version 2.0
+@rem
+@if "%DEBUG%"=="" @echo off
+@rem ##########################################################################
+@rem Gradle startup script for Windows
+@rem ##########################################################################
+set DIRNAME=%~dp0
+if "%DIRNAME%"=="" set DIRNAME=.
+set APP_BASE_NAME=%~n0
+set APP_HOME=%DIRNAME%
+set DEFAULT_JVM_OPTS="-Xmx64m" "-Xms64m"
+set CLASSPATH=%APP_HOME%\gradle\wrapper\gradle-wrapper.jar
+set JAVA_EXE=java.exe
+%JAVA_EXE% -version >NUL 2>&1
+if %ERRORLEVEL% equ 0 goto execute
+echo ERROR: JAVA_HOME is not set correctly.
+goto fail
+:execute
+"%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %GRADLE_OPTS% "-Dorg.gradle.appname=%APP_BASE_NAME%" -classpath "%CLASSPATH%" org.gradle.wrapper.GradleWrapperMain %*
+:end
+if "%ERRORLEVEL%"=="0" goto mainEnd
+:fail
+exit /b 1
+:mainEnd
+"""
+    with open('gradlew.bat', 'w') as f:
+        f.write(gradlew_bat)
+    print('Created gradlew.bat')
+
+os.makedirs('gradle/wrapper', exist_ok=True)
+
+props_path = 'gradle/wrapper/gradle-wrapper.properties'
+if not os.path.exists(props_path):
+    with open(props_path, 'w') as f:
+        f.write(
+            'distributionBase=GRADLE_USER_HOME\n'
+            'distributionPath=wrapper/dists\n'
+            'distributionUrl=https\\://services.gradle.org/distributions/gradle-8.4-bin.zip\n'
+            'networkTimeout=10000\n'
+            'validateDistributionUrl=true\n'
+            'zipStoreBase=GRADLE_USER_HOME\n'
+            'zipStorePath=wrapper/dists\n'
+        )
+    print('Created gradle-wrapper.properties')
+
+jar_path = 'gradle/wrapper/gradle-wrapper.jar'
+if not os.path.exists(jar_path):
+    import urllib.request
+    url = 'https://raw.githubusercontent.com/gradle/gradle/v8.4.0/gradle/wrapper/gradle-wrapper.jar'
+    try:
+        urllib.request.urlretrieve(url, jar_path)
+        print('Downloaded gradle-wrapper.jar')
+    except Exception as e:
+        print(f'Warning: could not download gradle-wrapper.jar: {e}')
 
 print('All assets generated successfully!')
