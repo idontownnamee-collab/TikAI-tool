@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg_dark">#0F0F0F</color>
+    <color name="card_dark">#1A1A1A</color>
+    <color name="card_dark2">#242424</color>
+    <color name="stroke_color">#333333</color>
+    <color name="white">#FFFFFF</color>
+    <color name="text_secondary">#888888</color>
+    <color name="accent_blue">#5C6BC0</color>
+    <color name="tiktok_red">#FE2C55</color>
+    <color name="green_active">#4CAF50</color>
+    <color name="black">#FF000000</color>
+</resources>
