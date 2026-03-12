@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">TikAI Tool</string>
+    <string name="channel_overlay">TikAI Overlay</string>
+    <string name="channel_download">Downloads</string>
 </resources>
