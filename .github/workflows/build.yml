@@ -13,8 +13,8 @@ jobs:
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
+          java-version: "17"
+          distribution: "temurin"
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
@@ -24,48 +24,115 @@ jobs:
           sdkmanager "platforms;android-34"
           sdkmanager "build-tools;34.0.0"
 
-      - name: Setup real Gradle wrapper
+      - name: Setup Gradle wrapper
         run: |
-          echo "Downloading real Gradle 8.4..."
           curl -L -o gradle.zip https://services.gradle.org/distributions/gradle-8.4-bin.zip
           unzip -q gradle.zip
           gradle-8.4/bin/gradle wrapper --gradle-version 8.4
           rm -rf gradle.zip gradle-8.4
           chmod +x gradlew
-          echo "=== gradlew first line ==="
-          head -2 gradlew
 
-      - name: Generate drawable and icon assets
+      - name: Fix settings.gradle and app/build.gradle
+        run: |
+          python3 - << 'PYEOF'
+          # Fix settings.gradle - use PREFER_SETTINGS
+          settings = """pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          rootProject.name = "TikAI Tool"
+          include ':app'
+          """
+          with open("settings.gradle", "w") as f:
+              f.write(settings)
+
+          # Fix root build.gradle - NO allprojects block
+          root_build = """buildscript {
+              ext.kotlin_version = "1.9.22"
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+              dependencies {
+                  classpath "com.android.tools.build:gradle:8.2.2"
+                  classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+              }
+          }
+          task clean(type: Delete) {
+              delete rootProject.buildDir
+          }
+          """
+          with open("build.gradle", "w") as f:
+              f.write(root_build)
+
+          # Fix app/build.gradle - include ALL deps including markwon, NO repositories block
+          app_build = """plugins {
+              id 'com.android.application'
+              id 'kotlin-android'
+          }
+          android {
+              namespace 'com.tiktokaitool'
+              compileSdk 34
+              defaultConfig {
+                  applicationId "com.tiktokaitool"
+                  minSdk 26
+                  targetSdk 34
+                  versionCode 1
+                  versionName "1.0.0"
+              }
+              buildTypes {
+                  release { minifyEnabled false }
+              }
+              buildFeatures { viewBinding true }
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+              kotlinOptions { jvmTarget = '17' }
+          }
+          dependencies {
+              implementation 'androidx.core:core-ktx:1.12.0'
+              implementation 'androidx.appcompat:appcompat:1.6.1'
+              implementation 'com.google.android.material:material:1.11.0'
+              implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+              implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
+              implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0'
+              implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+              implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+              implementation 'com.github.bumptech.glide:glide:4.16.0'
+              implementation 'androidx.work:work-runtime-ktx:2.9.0'
+              implementation 'com.google.gson:gson:2.10.1'
+              implementation 'androidx.datastore:datastore-preferences:1.0.0'
+              implementation 'io.noties.markwon:core:4.6.2'
+          }
+          """
+          with open("app/build.gradle", "w") as f:
+              f.write(app_build)
+          print("All gradle files fixed!")
+          PYEOF
+
+      - name: Generate assets
         run: python3 generate_assets.py
 
-      - name: Add Markwon dependency
-        run: |
-          grep -q "markwon" app/build.gradle || \
-          sed -i "s|implementation 'com.google.gson:gson:2.10.1'|implementation 'com.google.gson:gson:2.10.1'\n    implementation 'io.noties.markwon:core:4.6.2'|" app/build.gradle
-
-      - name: Show project structure
-        run: |
-          echo "=== Project files ==="
-          find . -name "*.kt" | head -20
-          echo "=== app/build.gradle ==="
-          cat app/build.gradle
-
       - name: Build Debug APK
-        run: |
-          ./gradlew assembleDebug --no-daemon --stacktrace
-          echo "=== Build finished, searching for APK ==="
-          find . -name "*.apk" 2>/dev/null || echo "NO APK FOUND"
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
 
-      - name: Copy APK to root
+      - name: Find and copy APK
         run: |
-          APK=$(find . -name "app-debug.apk" 2>/dev/null | head -1)
-          if [ -z "$APK" ]; then
-            echo "ERROR: APK not found!"
-            find . -name "*.apk" 2>/dev/null
-            exit 1
-          fi
+          APK=$(find . -name "app-debug.apk" | head -1)
+          if [ -z "$APK" ]; then echo "APK not found!"; exit 1; fi
           cp "$APK" TikAI_Tool_v1.0.apk
-          echo "APK size: $(ls -lh TikAI_Tool_v1.0.apk)"
+          ls -lh TikAI_Tool_v1.0.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -73,3 +140,4 @@ jobs:
           name: TikAI-Tool-APK
           path: TikAI_Tool_v1.0.apk
           retention-days: 30
+ 
