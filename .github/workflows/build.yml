@@ -24,8 +24,15 @@ jobs:
           sdkmanager "platforms;android-34"
           sdkmanager "build-tools;34.0.0"
 
-      - name: Grant gradlew permission
-        run: chmod +x gradlew
+      - name: Create gradlew if missing
+        run: |
+          if [ ! -f gradlew ]; then
+            curl -o gradle.zip https://services.gradle.org/distributions/gradle-8.4-bin.zip
+            unzip -q gradle.zip
+            gradle-8.4/bin/gradle wrapper
+            rm -rf gradle.zip gradle-8.4
+          fi
+          chmod +x gradlew
 
       - name: Generate all missing files
         run: python3 generate_assets.py
