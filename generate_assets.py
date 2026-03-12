@@ -1,5 +1,93 @@
 import os, struct, zlib
 
+print("=== Fixing Gradle files ===")
+
+# Fix settings.gradle
+with open("settings.gradle", "w") as f:
+    f.write("""pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.PREFER_SETTINGS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+rootProject.name = "TikAI Tool"
+include ':app'
+""")
+print("Fixed settings.gradle")
+
+# Fix root build.gradle - NO allprojects block
+with open("build.gradle", "w") as f:
+    f.write("""buildscript {
+    ext.kotlin_version = "1.9.22"
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath "com.android.tools.build:gradle:8.2.2"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+""")
+print("Fixed build.gradle")
+
+# Fix app/build.gradle - all deps, no repositories block
+with open("app/build.gradle", "w") as f:
+    f.write("""plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+}
+android {
+    namespace 'com.tiktokaitool'
+    compileSdk 34
+    defaultConfig {
+        applicationId "com.tiktokaitool"
+        minSdk 26
+        targetSdk 34
+        versionCode 1
+        versionName "1.0.0"
+    }
+    buildTypes {
+        release { minifyEnabled false }
+    }
+    buildFeatures { viewBinding true }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions { jvmTarget = '17' }
+}
+dependencies {
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
+    implementation 'androidx.work:work-runtime-ktx:2.9.0'
+    implementation 'com.google.gson:gson:2.10.1'
+    implementation 'androidx.datastore:datastore-preferences:1.0.0'
+    implementation 'io.noties.markwon:core:4.6.2'
+}
+""")
+print("Fixed app/build.gradle")
+
+print("\n=== Generating drawable assets ===")
+
 os.makedirs('app/src/main/res/drawable', exist_ok=True)
 os.makedirs('app/src/main/res/mipmap-anydpi-v26', exist_ok=True)
 
@@ -35,8 +123,8 @@ for folder, size in [('mipmap-mdpi',48),('mipmap-hdpi',72),('mipmap-xhdpi',96),(
     p = f'app/src/main/res/{folder}'
     os.makedirs(p, exist_ok=True)
     d = make_png(size, 254, 44, 85)
-    with open(f'{p}/ic_launcher.png', 'wb') as f: f.write(d)
-    with open(f'{p}/ic_launcher_round.png', 'wb') as f: f.write(d)
+    with open(f'{p}/ic_launcher.png','wb') as f: f.write(d)
+    with open(f'{p}/ic_launcher_round.png','wb') as f: f.write(d)
     print(f'Created {folder} icons')
 
-print('All assets generated successfully!')
+print("\nAll done!")
