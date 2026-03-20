@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="@color/bg_dark">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="56dp"
+        android:gravity="center_vertical" android:paddingStart="4dp" android:paddingEnd="16dp"
+        android:background="@color/bg_card">
+        <Button android:id="@+id/btn_back" android:layout_width="48dp" android:layout_height="48dp"
+            android:text="←" android:textColor="@color/text_primary"
+            android:background="@android:color/transparent" android:textSize="22sp"/>
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="1" android:text="Analysis History"
+            android:textColor="@color/text_primary" android:textSize="18sp"
+            android:textStyle="bold"/>
+        <Button android:id="@+id/btn_clear" android:layout_width="wrap_content"
+            android:layout_height="36dp" android:text="Clear"
+            android:textColor="@color/red" android:background="@drawable/bg_btn_danger"
+            android:paddingStart="14dp" android:paddingEnd="14dp"/>
+    </LinearLayout>
+    <TextView android:id="@+id/tv_empty"
+        android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1"
+        android:text="No history yet.\nUse AI Finder to analyze items."
+        android:textColor="@color/text_secondary" android:textSize="15sp"
+        android:gravity="center" android:visibility="gone"/>
+    <androidx.recyclerview.widget.RecyclerView android:id="@+id/rv_history"
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:padding="12dp" android:clipToPadding="false"/>
+</LinearLayout>
