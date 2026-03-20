@@ -6,10 +6,13 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
 
     <application
         android:allowBackup="true"
@@ -21,6 +24,7 @@
         android:usesCleartextTraffic="true"
         android:hardwareAccelerated="true">
 
+        <!-- Splash -->
         <activity android:name=".SplashActivity"
             android:exported="true"
             android:theme="@style/SplashTheme"
@@ -31,9 +35,27 @@
             </intent-filter>
         </activity>
 
+        <!-- Main - also receives Share intents -->
         <activity android:name=".MainActivity"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize"/>
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:windowSoftInputMode="adjustResize">
+            <!-- Receive shared TikTok links -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:mimeType="text/plain"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="https" android:host="www.tiktok.com"/>
+                <data android:scheme="https" android:host="vm.tiktok.com"/>
+                <data android:scheme="https" android:host="vt.tiktok.com"/>
+            </intent-filter>
+        </activity>
+
         <activity android:name=".SettingsActivity" android:exported="false"/>
         <activity android:name=".ResultActivity" android:exported="false"/>
         <activity android:name=".DownloadsActivity" android:exported="false"/>
