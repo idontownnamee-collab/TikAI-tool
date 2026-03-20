@@ -11,13 +11,11 @@ import android.view.animation.OvershootInterpolator;
 import android.widget.*;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
 
 public class MainActivity extends AppCompatActivity {
     private static final int OVERLAY_REQ = 1001;
     private EditText etUrl;
     private TextView tvStatus, tvApiWarn;
-    private CardView cardOverlay;
     private PrefsManager prefs;
 
     @Override
@@ -28,7 +26,6 @@ public class MainActivity extends AppCompatActivity {
         etUrl     = findViewById(R.id.et_url);
         tvStatus  = findViewById(R.id.tv_status);
         tvApiWarn = findViewById(R.id.tv_api_warn);
-        cardOverlay = findViewById(R.id.card_overlay);
 
         animateCards();
 
@@ -116,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
             CharSequence t = cm.getPrimaryClip().getItemAt(0).getText();
             if (t != null && (t.toString().contains("tiktok.com") || t.toString().contains("vm.tiktok"))) {
                 etUrl.setText(t.toString());
-                Toast.makeText(this, "✓ Pasted", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Pasted!", Toast.LENGTH_SHORT).show();
             } else Toast.makeText(this, "No TikTok URL in clipboard", Toast.LENGTH_SHORT).show();
         }
     }
@@ -124,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
     private void startDownload() {
         String url = etUrl.getText().toString().trim();
         if (url.isEmpty()) { Toast.makeText(this, "Paste a TikTok URL first", Toast.LENGTH_SHORT).show(); return; }
-        if (!url.contains("tiktok") ) { Toast.makeText(this, "Not a valid TikTok URL", Toast.LENGTH_SHORT).show(); return; }
+        if (!url.contains("tiktok")) { Toast.makeText(this, "Not a valid TikTok URL", Toast.LENGTH_SHORT).show(); return; }
         startActivity(new Intent(this, DownloadsActivity.class).putExtra("url", url));
     }
 
@@ -147,4 +144,4 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(req, res, data);
         if (req == OVERLAY_REQ && Settings.canDrawOverlays(this)) launchOverlayAndTikTok();
     }
-}
+}           }
